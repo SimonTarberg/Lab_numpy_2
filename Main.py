@@ -1,8 +1,9 @@
 import numpy as np
-import cmath as cp
 from scipy.io import wavfile as waw
+from scipy import ndimage
 import matplotlib.pyplot as plt
 import cmath as cm
+import scipy as sc
 
 """"
 #Komplexa tal:
@@ -46,32 +47,91 @@ def mandelbrot(c):
     z = 0
     for i in range(max_iter):
         z = z*z + c
-    if abs(z) > 2:
-        return False
+        if abs(z) > 2:
+            return False
     return True
 
 #UPG 1b)
 
-def zero_matrix():
+#print(zero_matrix)
+
+
+#A = 1 + 1j
+#print(mandelbrot(A))
+
+#Fråga 1b)
+def function_b(): # skapar en bild av mandelbrotmängden
+    a = np.linspace(-2,2,400) 
+    b = np.linspace(-2,2,400)
+    amin = -2
+    amax = 2
+    bmin = -2
+    bmax = 2
     s = (401,401)
-    M = np.zeros(s)
+    M = np.zeros(s) # skapar en nollmatris som vi kommer att fylla i med 1:or där mandelbrotmängden finns
+    for A in range(len(a)):
+        for B in range(len(b)):
+            resultat = a[A] + b[B]*1j # skapar det komplexa talet som vi ska testa
+            if(mandelbrot(resultat)):
+                M[int((a[A]+2)*100), int((b[B]+2)*100)] = 1 # fyller i 1:or i matrisen där mandelbrotmängden finns, multiplicerar med 100 för att få rätt index i matrisen
+    plt.imshow(M, cmap='gray', extent=(amin, amax, bmin, bmax))
+    plt.show()
 
-a = np.arange(-2,2,0.01)
-b = np.arange(-2,2,0.01)
 
-A, B = np.meshgrid(a, b)
-C = A + 1j * B
+def function_c():
+    a = np.linspace(-0.9,-0.5,400) 
+    b = np.linspace(0.0,0.4,400)
+    amin = -0.9
+    amax = -0.5
+    bmin = 0
+    bmax = 0.4
+    s = (401,401)
+    M = np.zeros(s) # skapar en nollmatris som vi kommer att fylla i med 1:or där mandelbrotmängden finns
+    for A in range(len(a)):
+        for B in range(len(b)):
+            resultat = a[A] + b[B]*1j # skapar det komplexa talet som vi ska testa
+            if(mandelbrot(resultat)):
+                M[int((a[A]+2)*100), int((b[B]+2)*100)] = 1 # fyller i 1:or i matrisen där mandelbrotmängden finns, multiplicerar med 100 för att få rätt index i matrisen
+    plt.imshow(M, cmap='gray', extent=(amin, amax, bmin, bmax))
+    plt.show()
 
-result = mandelbrot(C)
 
-M = result.astype(int)
+def read_image():
+    bild = plt.imread("IMG_8625.jpeg")
+    # Convert to grayscale by taking mean across RGB channels
+    svartbild = np.mean(bild, axis=2)
+    #plt.imshow(svartbild, cmap = "gray")
+    #plt.show()
+    return svartbild
 
-# Visa bild
-plt.imshow(M, cmap='gray')
-plt.xlabel('a')
-plt.ylabel('b')
-plt.title('Mandelbrot')
-plt.show()
 
+def sobel_image():
+    svartbild = read_image()
+
+    Gx = np.array([[-1, 0, 1],
+                   [-2, 0, 2],
+                   [-1, 0, 1]])
+    Gy = np.array([[-1, -2, -1],
+                   [ 0,  0,  0],
+                   [ 1,  2,  1]])
+
+    xd = ndimage.convolve(svartbild, Gx, mode='constant')
+    yd = ndimage.convolve(svartbild, Gy, mode='constant')
+    S = np.sqrt(xd**2 + yd**2)
+
+    #plt.imshow(S, cmap='gray')
+    #plt.show()
+    return S
+
+
+def reverse_falt():
+    S = sobel_image()
+    vilkor = S > 100
+    S[vilkor] = 0
+    S[~vilkor] = 255
+    plt.imshow(S, cmap='gray')
+    plt.show()
+
+reverse_falt()
 
 
