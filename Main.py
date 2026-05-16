@@ -4,6 +4,7 @@ from scipy import ndimage
 import matplotlib.pyplot as plt
 import cmath as cm
 import scipy as sc
+from scipy import fft
 
 """"
 #Komplexa tal:
@@ -132,6 +133,58 @@ def reverse_falt():
     plt.imshow(S, cmap='gray')
     plt.show()
 
-reverse_falt()
+def plot_sound_wawe():
+    rate, data = waw.read("Piano_1_C.wav")
+    N = len(data)
+    data = data[0:N]
+    plt.figure()
+    plt.plot(data)
+    plt.show()
 
-dsagdsa
+def fourier_transform():
+    rate, data = waw.read("Piano_1_C.wav")
+    if data.ndim > 1:
+        # Use only first channel if the audio is stereo
+        data = data[:, 0]
+    N = len(data)
+
+    # Compute Fourier transform and plot magnitude of the first half
+    F = fft.fft(data)
+    half = N // 2
+    freqs = np.arange(half) * rate / N
+
+    plt.figure()
+    plt.plot(freqs, np.abs(F[:half]))
+    plt.title("Magnitud av Fouriertransformen")
+    plt.xlabel("Frekvens (Hz)")
+    plt.ylabel("|F(f)|")
+    plt.grid(True)
+    plt.show()
+
+def find_tune(frequenzy):
+    notes = {
+    "C4": 261.63,
+    "D4": 293.66,
+    "E4": 329.63,
+    "F4": 349.23,
+    "G4": 392.00,
+    "A4": 440.00,
+    "B4": 493.88
+}
+    for i in range(1, 5):  # Check for harmonics up to the 4th
+        for note, freq in notes.items():
+            if abs(freq * i - frequenzy) < 5:  # Allow a small tolerance
+                return note
+    return "Unknown"
+
+def read_sound(file):
+    rate, data = waw.read(file)
+    if data.ndim > 1:
+        data = data[:, 0]  # Use only first channel if stereo
+    freq_max = np.argmax(np.abs(fft.fft(data)))
+
+    return freq_max, find_tune(freq_max)
+
+def moll_accord(file):
+    freq, note = read_sound(file)
+    
