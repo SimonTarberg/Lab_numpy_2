@@ -44,6 +44,7 @@ luffyBlur = scipy.signal.convolve2d(luffy,kernalGauss, mode = "same")
 #UPG 1 a)
 
 def mandelbrot(c):
+    """Return True if c stays bounded in the Mandelbrot iteration."""
     max_iter = 100
     z = 0
     for i in range(max_iter):
@@ -96,6 +97,7 @@ def function_c():
     plt.imshow(M, cmap='gray', extent=(amin, amax, bmin, bmax))
     plt.show()
 
+function_c()
 
 def read_image():
     bild = plt.imread("IMG_8625.jpeg")
@@ -124,7 +126,6 @@ def sobel_image():
     #plt.show()
     return S
 
-
 def reverse_falt():
     S = sobel_image()
     vilkor = S > 100
@@ -133,18 +134,25 @@ def reverse_falt():
     plt.imshow(S, cmap='gray')
     plt.show()
 
+
 def plot_sound_wawe():
     rate, data = waw.read("Piano_1_C.wav")
     N = len(data)
     data = data[0:N]
+    duration = N / rate
+    time = np.linspace(0., duration, N)
     plt.figure()
-    plt.plot(data)
+    plt.plot(time, data)
+    plt.ylabel("Amplitud")
+    plt.xlabel("Tid (s)")
+    plt.title("Ljudvåg: Piano_1_C.wav")
+    plt.grid(True)
     plt.show()
+
 
 def fourier_transform():
     rate, data = waw.read("Piano_1_C.wav")
     if data.ndim > 1:
-        # Use only first channel if the audio is stereo
         data = data[:, 0]
     N = len(data)
 
@@ -157,34 +165,31 @@ def fourier_transform():
     plt.plot(freqs, np.abs(F[:half]))
     plt.title("Magnitud av Fouriertransformen")
     plt.xlabel("Frekvens (Hz)")
-    plt.ylabel("|F(f)|")
+    plt.ylabel("amplitud")
     plt.grid(True)
     plt.show()
 
 def find_tune(frequenzy):
     notes = {
-    "C4": 261.63,
-    "D4": 293.66,
-    "E4": 329.63,
-    "F4": 349.23,
-    "G4": 392.00,
-    "A4": 440.00,
-    "B4": 493.88
+    "C": 261.63,
+    "D": 293.66,
+    "E": 329.63,
+    "F": 349.23,
+    "G": 392.00,
+    "A": 440.00,
+    "B": 493.88
 }
-    for i in range(1, 5):  # Check for harmonics up to the 4th
+    for i in range(1, 5):  # Kontrollera harmoniska övertoner upp till 4:e ordningen
         for note, freq in notes.items():
-            if abs(freq * i - frequenzy) < 5:  # Allow a small tolerance
+            if abs(freq * i - frequenzy) < 5:  # Tolerans för tonigenkänning
                 return note
     return "Unknown"
 
 def read_sound(file):
+    """Läser in en ljudfil, väljer kanal vid stereo och hittar huvudfrekvensen."""
     rate, data = waw.read(file)
     if data.ndim > 1:
-        data = data[:, 0]  # Use only first channel if stereo
+        data = data[:, 0]  # Använder första kanal vid stereo
     freq_max = np.argmax(np.abs(fft.fft(data)))
 
     return freq_max, find_tune(freq_max)
-
-def moll_accord(file):
-    freq, note = read_sound(file)
-    
